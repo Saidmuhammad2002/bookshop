@@ -15,11 +15,12 @@ export const booksApiSlice = apiSlice.injectEndpoints({
       }),
 
       transformResponse: (responseData) => {
-        const loadedBook = responseData.data.map((book) => {
-          book = book.book;
-          return book;
-        });
-        return booksAdapter.setAll(initialState, loadedBook);
+        if (!responseData || !responseData.data) {
+          return booksAdapter.setAll(initialState, []);
+        } else {
+          const loadedBooks = responseData.data.map((item) => item.book);
+          return booksAdapter.setAll(initialState, loadedBooks);
+        }
       },
       providesTags: (result, error, arg) => {
         console.log("result", result);
@@ -38,10 +39,10 @@ export const booksApiSlice = apiSlice.injectEndpoints({
     //   ],
     // }),
     addNewBook: builder.mutation({
-      query: ({ title, author }) => ({
+      query: (body) => ({
         url: "/books",
         method: "POST",
-        body: { title, author },
+        body,
       }),
       invalidatesTags: ["Books"],
     }),

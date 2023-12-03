@@ -1,4 +1,5 @@
 import { useFormik } from "formik";
+import PropTypes from "prop-types";
 import * as yup from "yup";
 import { Modal, Button, TextField, Typography, Card, IconButton, Grid, InputLabel } from "@mui/material";
 import { useAddNewBookMutation } from "./booksApiSlice";
@@ -14,39 +15,43 @@ const fields = [
   { name: "author", label: "Author", type: "text", placeholder: "Enter author" },
   { name: "cover", label: "Cover", type: "url", placeholder: "Choose cover image", accept: "image/*" },
   { name: "published", label: "Published Date", type: "date" },
-  { name: "pages", label: "Pages", type: "text", placeholder: "Enter number of pages" },
+  { name: "pages", label: "Pages", type: "number", placeholder: "Enter number of pages" },
 ];
 
 const validationSchema = yup.object().shape({
   isbn: yup.string().required("ISBN is required"),
-  title: yup.string().required("Title is required"),
-  author: yup.string().required("Author is required"),
-  cover: yup.mixed().required("Cover image is required"),
-  published: yup.date().required("Published date is required"),
-  pages: yup.number().required("Pages is required").positive("Please enter a valid number"),
+  title: yup.string().optional("Title is optional"),
+  author: yup.string().optional("Author is optional"),
+  cover: yup.mixed().optional("Cover image is optional"),
+  published: yup.date().optional("Published date is optional"),
+  pages: yup.number().optional("Pages is optional").positive("Please enter a valid number"),
 });
 
 const AddBookModal = ({ open, onClose }) => {
-  const createBookMutation = useAddNewBookMutation();
+  const [addNewBook, { isLoading, isError, error, isSuccess, data }] = useAddNewBookMutation();
 
   const formik = useFormik({
-    initialValues: { title: "", author: "", cover: "", published: dayjs("2022-04-17"), pages: "" },
+    initialValues: { isbn: "", title: "", author: "", cover: "", published: dayjs("2022-04-17"), pages: "" },
     validationSchema,
     onSubmit: async (values) => {
-      try {
-        await createBookMutation.mutateAsync(values);
-        onClose();
-      } catch (error) {
-        console.error("Error creating book:", error);
-      }
+      values.published = values.published.format("YYYY-MM-DD");
+      await addNewBook(values);
+      onClose();
     },
   });
 
   return (
     <Modal open={open} onClose={onClose}>
       <Card
-        maxwidth="430px"
-        sx={{ p: 4, position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)" }}
+        sx={{
+          p: 4,
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          maxHeight: "90vh",
+          overflow: "auto",
+        }}
       >
         <Grid container justifyContent="space-between" alignItems="center">
           <Typography fontSize="20px" fontWeight="700">
@@ -62,7 +67,7 @@ const AddBookModal = ({ open, onClose }) => {
         <form onSubmit={formik.handleSubmit}>
           {fields.map((field) => (
             <Grid key={field.name} container mb={2}>
-              <InputLabel htmlFor={field.name} error={formik.touched[field.name] && formik.errors[field.name]}>
+              <InputLabel htmlFor={field.name} error={Boolean(formik.touched[field.name] && formik.errors[field.name])}>
                 {field.label}
               </InputLabel>
               {field.type === "date" ? (
@@ -70,9 +75,7 @@ const AddBookModal = ({ open, onClose }) => {
                   <DatePicker
                     value={formik.values[field.name]}
                     onChange={(value) => formik.setFieldValue(field.name, value)}
-                    renderInput={(params) => (
-                      <TextField {...params} variant="outlined" placeholder={field.placeholder} />
-                    )}
+                    textField={(params) => <TextField {...params} variant="outlined" placeholder={field.placeholder} />}
                   />
                 </LocalizationProvider>
               ) : (
@@ -92,11 +95,13 @@ const AddBookModal = ({ open, onClose }) => {
             </Grid>
           ))}
 
+          {isError && <Typography color="red">{error?.data?.message}</Typography>}
+
           <Grid container justifyContent="space-between" gap={"20px"}>
             <Button variant="outlined" onClick={onClose} sx={{ minWidth: "180px" }}>
               Cancel
             </Button>
-            <Button type="submit" variant="contained" color="primary" sx={{ minWidth: "180px" }}>
+            <Button type="submit" variant="contained" color="primary" sx={{ minWidth: "180px" }} disabled={isLoading}>
               Create Book
             </Button>
           </Grid>
@@ -107,3 +112,8 @@ const AddBookModal = ({ open, onClose }) => {
 };
 
 export default AddBookModal;
+
+AddBookModal.propTypes = {
+  open: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+};

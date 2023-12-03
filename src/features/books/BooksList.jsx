@@ -12,7 +12,7 @@ const BooksList = () => {
 
   const [open, setOpen] = useState(false);
 
-  const { username } = useAuth();
+  const { name } = useAuth();
 
   const {
     data: books,
@@ -28,6 +28,7 @@ const BooksList = () => {
 
   let content;
 
+  console.log(isSuccess);
   if (isLoading) content = <div>Loading....</div>;
 
   if (isError) {
@@ -37,7 +38,19 @@ const BooksList = () => {
   if (isSuccess) {
     const { ids } = books;
 
-    const listData = ids?.length && ids.map((bookId) => <Book key={bookId} bookId={bookId} />);
+    const listData = ids?.length ? (
+      ids.map((bookId) => <Book key={bookId} bookId={bookId} />)
+    ) : (
+      <Typography
+        color={"white"}
+        sx={{
+          width: "100%",
+          textAlign: "center",
+        }}
+      >
+        No books yet :(
+      </Typography>
+    );
 
     content = (
       <div>

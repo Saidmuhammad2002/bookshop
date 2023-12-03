@@ -12,9 +12,10 @@ const baseQueryWithSign = async (args, api, extraOptions) => {
 
   const { key, secret } = api.getState().auth;
   const headers = new Headers();
+  const stringBody = args.body ? JSON.stringify(args.body) : "";
+  const sign = md5(`${args.method}${args.url}${stringBody}${secret}`);
 
-  const sign = md5(`${args.method}${args.url}${secret}`);
-  console.log(args, secret);
+  console.log("args", args);
   headers.append("key", key);
 
   headers.append("sign", sign);

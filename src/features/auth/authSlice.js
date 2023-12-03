@@ -6,26 +6,26 @@ const initialState = localStorage.getItem("auth")
       key: null,
       secret: null,
       email: null,
-      userName: null,
+      name: null,
     };
 const authSlice = createSlice({
   name: "auth",
   initialState: initialState,
   reducers: {
     setCredentials: (state, action) => {
-      const { key, secret, email, userName } = action.payload;
+      const { key, secret, email, name } = action.payload;
 
       state.key = key;
       state.secret = secret;
       state.email = email;
-      state.userName = userName;
+      state.name = name;
       localStorage.setItem("auth", JSON.stringify(state));
     },
     logOut: (state) => {
       state.key = null;
       state.secret = null;
       state.email = null;
-      state.userName = null;
+      state.name = null;
       localStorage.removeItem("auth");
     },
   },

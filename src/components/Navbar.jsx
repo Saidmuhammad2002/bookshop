@@ -8,7 +8,7 @@ import { logOut } from "../features/auth/authSlice";
 import { useDispatch } from "react-redux";
 
 const Navbar = () => {
-  const { userName } = useAuth();
+  const { name } = useAuth();
   const dispatch = useDispatch();
   const settings = [
     {
@@ -56,7 +56,7 @@ const Navbar = () => {
         <Box sx={{ flexGrow: 0 }}>
           <Tooltip title="Open settings">
             <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-              <Avatar alt={userName} src="" />
+              <Avatar>{name?.[0]}</Avatar>
             </IconButton>
           </Tooltip>
           <Menu
